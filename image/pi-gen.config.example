@@ -1,0 +1,8 @@
+# Example configuration for an official Raspberry Pi pi-gen build.
+# Copy to your pi-gen config and adjust credentials/locale according to pi-gen documentation.
+IMG_NAME='hamspot-prototype'
+RELEASE='trixie'
+TARGET_HOSTNAME='hamspot'
+ENABLE_SSH=0
+# Set a user/password securely using the supported pi-gen configuration mechanism.
+# The prototype has no authenticated admin web UI; do not expose it publicly.
