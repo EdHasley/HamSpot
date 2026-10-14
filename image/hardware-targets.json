@@ -1,0 +1,18 @@
+{
+  "architecture": "arm64",
+  "base": "Raspberry Pi OS Lite 64-bit",
+  "models": [
+    "Raspberry Pi 4 Model B",
+    "Raspberry Pi 5"
+  ],
+  "displays": {
+    "hdmi0": "nextion_style",
+    "hdmi1": "configurable",
+    "physical_nextion": "serial, model-specific firmware required"
+  },
+  "testing": {
+    "primary": "Pi 4",
+    "secondary": "Pi 5"
+  },
+  "status": "prototype, untested image build"
+}
