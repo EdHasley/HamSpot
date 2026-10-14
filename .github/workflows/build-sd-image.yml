@@ -40,7 +40,7 @@ jobs:
           stage-list: stage0 stage1 stage2 ./image/stage-hamspot
           export-last-stage-only: true
           enable-ssh: 0
-          increase-runner-disk-size: true
+          increase-runner-disk-size: false
       - name: Publish downloadable image
         uses: actions/upload-artifact@v4
         with:
