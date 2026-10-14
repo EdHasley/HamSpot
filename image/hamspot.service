@@ -1,0 +1,21 @@
+[Unit]
+Description=HamSpot prototype dashboard
+After=network.target
+
+[Service]
+Type=simple
+User=hamspot
+Group=hamspot
+WorkingDirectory=/opt/hamspot
+Environment=HAMSPOT_HOST=127.0.0.1
+Environment=HAMSPOT_PORT=8080
+ExecStart=/usr/bin/python3 /opt/hamspot/app/server.py
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
