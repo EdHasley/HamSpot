@@ -8,5 +8,6 @@ install -m 0644 "${STAGE_DIR}/files/settings.html" "${ROOTFS_DIR}/opt/hamspot/ap
 install -m 0644 "${STAGE_DIR}/files/config.example.json" "${ROOTFS_DIR}/opt/hamspot/config.example.json"
 install -m 0644 "${STAGE_DIR}/files/hamspot.service" "${ROOTFS_DIR}/etc/systemd/system/hamspot.service"
 on_chroot <<'EOF'
+id hamspot >/dev/null 2>&1 || useradd --system --home /nonexistent --shell /usr/sbin/nologin hamspot
 systemctl enable hamspot.service
 EOF
