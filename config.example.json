@@ -1,0 +1,31 @@
+{
+  "radio": {
+    "mode": "DMR",
+    "reflector": "XLX480",
+    "talkgroup": 4005
+  },
+  "ports": {
+    "dmr_udp": 62030,
+    "experimental_reflector_udp": 62040
+  },
+  "firewall": {
+    "enabled": false,
+    "apply_changes": false
+  },
+  "displays": {
+    "hdmi0": "nextion_style",
+    "hdmi1": "dashboard",
+    "mirror": false,
+    "nextion": {
+      "enabled": false,
+      "device": "/dev/serial0",
+      "baud": 9600
+    }
+  },
+  "bridge": {
+    "dstar_dmr": {
+      "enabled": false,
+      "vocoder_backend": "none"
+    }
+  }
+}
