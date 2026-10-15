@@ -1,21 +1,18 @@
 [Unit]
-Description=HamSpot prototype dashboard
-After=network.target
-
+Description=HamSpot HTTPS control center
+After=network.target hamspot-firstboot.service
+Requires=hamspot-firstboot.service
 [Service]
-Type=simple
 User=hamspot
 Group=hamspot
+SupplementaryGroups=systemd-journal
 WorkingDirectory=/opt/hamspot
-Environment=HAMSPOT_HOST=127.0.0.1
-Environment=HAMSPOT_PORT=8080
 ExecStart=/usr/bin/python3 /opt/hamspot/app/server.py
 Restart=on-failure
 RestartSec=3
-NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
 PrivateTmp=true
-
+ReadWritePaths=/etc/hamspot /run/lock
 [Install]
 WantedBy=multi-user.target

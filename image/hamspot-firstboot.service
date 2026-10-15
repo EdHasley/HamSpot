@@ -1,0 +1,11 @@
+[Unit]
+Description=Create unique HamSpot login and TLS certificate
+After=local-fs.target
+Before=hamspot.service
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/hamspot/app/firstboot.py
+RemainAfterExit=yes
+StandardOutput=journal+console
+[Install]
+WantedBy=multi-user.target

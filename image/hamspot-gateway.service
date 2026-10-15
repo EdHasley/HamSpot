@@ -1,0 +1,18 @@
+[Unit]
+Description=HamSpot DMRGateway
+After=network-online.target mosquitto.service
+Wants=network-online.target mosquitto.service
+[Service]
+User=hamspot
+Group=hamspot
+WorkingDirectory=/usr/share/hamspot
+ExecCondition=/usr/bin/python3 -c "import json,sys;sys.exit(0 if json.load(open('/etc/hamspot/config.json'))['network_enabled'] else 1)"
+ExecStart=/usr/local/bin/DMRGateway /etc/hamspot/DMRGateway.ini
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+[Install]
+WantedBy=multi-user.target

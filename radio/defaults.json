@@ -1,0 +1,9 @@
+{
+  "callsign": "N0CALL", "dmr_id": 0,
+  "uart": "/dev/ttyAMA0", "baud": 115200, "duplex": true,
+  "rx_frequency": 0, "tx_frequency": 0, "color_code": 1,
+  "rx_offset": 0, "tx_offset": 0, "rx_level": 50, "tx_level": 50,
+  "rf_level": 100, "slot": 2, "talkgroup": 6,
+  "radio_enabled": false, "network_enabled": false,
+  "selected_reflector": "", "module": "E", "reflectors": []
+}

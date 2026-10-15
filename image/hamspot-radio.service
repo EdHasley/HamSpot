@@ -1,0 +1,21 @@
+[Unit]
+Description=HamSpot MMDVM-Host
+After=network.target mosquitto.service hamspot-gateway.service
+Wants=mosquitto.service
+[Service]
+User=hamspot
+Group=hamspot
+SupplementaryGroups=dialout
+WorkingDirectory=/usr/share/hamspot
+ExecCondition=/usr/bin/python3 -c "import json,sys;sys.exit(0 if json.load(open('/etc/hamspot/config.json'))['radio_enabled'] else 1)"
+ExecStart=/usr/local/bin/MMDVM-Host /etc/hamspot/MMDVM-Host.ini
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+StandardOutput=journal
+StandardError=journal
+[Install]
+WantedBy=multi-user.target

@@ -1,7 +1,9 @@
-name: Build HamSpot SD Image (Prototype)
+name: Build HamSpot SD Image (DMR Integration Test)
 
 on:
   workflow_dispatch:
+  push:
+    branches: ["image/dmr-integration"]
 
 permissions:
   contents: read
@@ -13,38 +15,34 @@ jobs:
     steps:
       - name: Get HamSpot source
         uses: actions/checkout@v4
+      - name: Test configuration and API
+        run: python3 -m unittest discover -s tests -v
       - name: Prepare pi-gen custom stage
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p image/stage-hamspot/00-hamspot/files
-          cp image/pi-gen-stage/00-hamspot/00-packages image/stage-hamspot/00-hamspot/00-packages
-          cp image/pi-gen-stage/00-hamspot/00-run.sh image/stage-hamspot/00-hamspot/00-run.sh
-          chmod +x image/stage-hamspot/00-hamspot/00-run.sh
-          cp app/server.py app/index.html app/hdmi.html app/settings.html image/stage-hamspot/00-hamspot/files/
-          cp config.example.json image/hamspot.service image/stage-hamspot/00-hamspot/files/
-          cat > image/stage-hamspot/prerun.sh <<'EOF'
-          #!/bin/bash -e
-          if [ ! -d "${ROOTFS_DIR}" ]; then
-            copy_previous
-          fi
-          EOF
-          chmod +x image/stage-hamspot/prerun.sh
+          bash image/prepare-stage.sh image/stage-hamspot
       - name: Build Raspberry Pi OS image
         id: image
         uses: usimd/pi-gen-action@v1
         with:
-          image-name: HamSpot-arm64-prototype
+          image-name: HamSpot-arm64-dmr-test
           pi-gen-version: arm64
           release: trixie
           stage-list: stage0 stage1 stage2 ./image/stage-hamspot
           export-last-stage-only: true
+          hostname: hamspot
+          timezone: America/Chicago
+          keyboard-keymap: us
+          keyboard-layout: English (US)
+          compression: xz
+          enable-cloud-init: 0
           enable-ssh: 0
           increase-runner-disk-size: false
       - name: Publish downloadable image
         uses: actions/upload-artifact@v4
         with:
-          name: HamSpot-arm64-prototype-SD-image
+          name: HamSpot-arm64-dmr-test-SD-image
           path: ${{ steps.image.outputs.image-path }}
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 14
