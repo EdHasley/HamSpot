@@ -1,9 +1,7 @@
-# HamSpot bootable SD image build
+# HamSpot image
 
-Target: Raspberry Pi OS Lite 64-bit, Raspberry Pi 4/5 initially. This is a **prototype image recipe**, not yet a verified bootable release.
+See the root README for flashing, credentials and supported functions. The image produced by this branch is a **DMR integration test**, not a finished multi-mode release.
 
-Use the official Raspberry Pi `pi-gen` image builder on an appropriate Linux build host. Place `stage-hamspot` into pi-gen as a custom stage after the base OS stages, or use an equivalent image customization process. Install Python 3 and the HamSpot source in `/opt/hamspot`, install `hamspot.service`, and enable it at boot.
+Both `build-image.sh` and GitHub Actions use `prepare-stage.sh` to package the same application, radio templates and services. Upstream commits are pinned in `radio/sources.json`. The image retains those source trees and their licenses.
 
-The existing web dashboard runs locally at port 8080. A production image still requires user provisioning, secure authentication, MMDVMHost hardware integration, Nextion serial support, HDMI kiosk setup, firewall management and actual codec bridging.
-
-**Do not distribute the prototype as a functional radio hotspot image.** Test with spare SD media; do not overwrite your existing WPSD/Pi-Star card.
+Credentials and TLS keys are generated on first boot, never embedded in the published image. Initial Ethernet DHCP is required. Radio/network remain off until configured in the HTTPS control center at port 8443. The host-file editor identifies D-Star files as inactive until their gateways are installed.

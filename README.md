@@ -1,19 +1,31 @@
 # HamSpot
 
-Independent Raspberry Pi digital-radio hotspot platform. **Work in progress, not a finished Pi-Star/WPSD replacement.**
+Independent Raspberry Pi radio platform. **In development; not a complete Pi-Star/WPSD replacement.**
 
-## Project goals
-- Original responsive web dashboard, live MMDVM radio events
-- Nextion-style HDMI kiosk views, including dual HDMI on supported Pi hardware
-- Separate physical Nextion HMI/TFT project and serial adapter
-- DMR, D-Star and additional supported MMDVM modes
-- Editable protocol ports and a secure nftables firewall manager
-- D-Star <-> DMR bridge with explicit vocoder backend selection
-- Reproducible Raspberry Pi OS installation and eventual flashable image
+## DMR integration image
 
-## First prototype
-Run `python3 app/server.py` on Python 3.10+, then open http://127.0.0.1:8080.
-To listen on your trusted LAN set `HAMSPOT_HOST=0.0.0.0`. **The prototype has no authentication. Do not expose it to the Internet.**
+The `image/dmr-integration` branch builds a Raspberry Pi OS Lite arm64 image for testing on spare SD media. It installs pinned upstream MMDVM-Host and DMRGateway sources, Mosquitto, authenticated HTTPS administration, saved settings, custom XLX hosts/ports, and systemd startup. No callsign, private reflector or RF frequency is published in this repository.
 
-This first milestone is a demonstration dashboard with mock radio values, not a hardware-ready hotspot.
-See docs/ROADMAP.md for implementation boundaries and test plan.
+Working application paths: radio configuration, saved reflectors, quick connect/disconnect, start/stop, live journal diagnostics, JSON configuration backup/restore, and a separate host-file editor for DMR/XLX, DCS, XRF and REF. DMR host edits feed DMRGateway; D-Star lists are stored only until their gateways are integrated. Themes apply throughout the control center.
+
+Radio and network are disabled on first boot. First use requires callsign, DMR ID and licensed RX/TX frequencies. Modem profile defaults to `/dev/ttyAMA0`, 115200 baud; Pi 5 GPIO UART overlay is included. FM and POCSAG are explicitly disabled. RX/TX and reflector login must be tested on actual hardware.
+
+### Using a generated image
+
+1. Download the successful **Build HamSpot SD Image** Actions artifact and extract its `.img.xz` from the artifact ZIP. Flash the `.img.xz` to a **spare** card with Raspberry Pi Imager. Keep the existing card intact.
+2. Connect Ethernet for initial setup and boot the Pi. Allow time for the unique TLS certificate and login to be generated.
+3. Credentials are printed to the attached console and written to `HAMSPOT-LOGIN.txt` on the FAT boot partition after first boot. If using another computer to read that partition, shut down the Pi before removing the card.
+4. Open `https://hamspot.local:8443` (or the Pi IP at port 8443). The certificate is generated on the Pi, so a certificate warning is expected. Sign in as `admin` using the generated password.
+5. Enter radio settings and enable the radio. Add reflector entries, including any custom remote UDP port, then use Quick Connect. Review Diagnostics for modem initialization and gateway login; an active service alone is not a successful link.
+
+SSH is disabled. Do not forward the administration port to the Internet. Keep credential files and backups private. The operating-system account is not the web admin account.
+
+### What is not finished
+
+D-Star/other mode gateways, cross-mode audio, physical Nextion HMI/TFT and serial driver, automatic Wi-Fi provisioning, dual HDMI kiosk startup, firewall editing, and full Pi-Star/WPSD menu parity remain unfinished. Unimplemented features are identified rather than exposed as working controls. This image is a DMR integration test, **not the requested complete multi-mode release**.
+
+## Development
+
+`python3 -m unittest discover -s tests -v` tests validation, rendering, authentication, host editing and failed-operation rollback. Run `bash image/build-image.sh` on a Linux host with Docker to build locally, or use the repository Actions workflow. Build success does not certify Pi boot, RF transmit, network audio or displays. See `docs/BUILD_STATUS.md` for exact scope.
+
+Radio source revisions are recorded in `radio/sources.json`. Upstream source and license files remain under `/usr/local/src/hamspot` in the image. HamSpot does not claim authorship of those programs.

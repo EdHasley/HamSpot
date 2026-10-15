@@ -1,0 +1,4 @@
+{
+  "MMDVM-Host": {"url": "https://github.com/g4klx/MMDVM-Host.git", "commit": "a819ae64edd5de5a7468b24e47d673a53f94fc9f"},
+  "DMRGateway": {"url": "https://github.com/g4klx/DMRGateway.git", "commit": "ad172eae396fed562e14c92375d63479e9fe689a"}
+}
