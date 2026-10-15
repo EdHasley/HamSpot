@@ -35,11 +35,13 @@ def validate(value):
         raise ValueError('At most 100 saved reflectors are supported')
     ids = set()
     for r in c['reflectors']:
-        if not isinstance(r,dict) or set(r) != {'id','label','host','port','password'}:
+        if not isinstance(r,dict) or set(r) not in ({'id','label','host','port','password'}, {'id','label','host','port','password','module'}):
             raise ValueError('Each reflector needs id, label, host, port and password')
         if not isinstance(r['id'],str) or not re.fullmatch('[A-Z0-9]{3}',r['id']) or r['id'] in ids:
             raise ValueError('Reflector IDs must be unique three-character uppercase IDs')
         ids.add(r['id'])
+        if 'module' in r and (not isinstance(r['module'],str) or not re.fullmatch('[A-Z]',r['module'])):
+            raise ValueError('Host default module must be A–Z')
         if not isinstance(r['label'],str) or not 1 <= len(r['label']) <= 60 or any(ord(x)<32 for x in r['label']):
             raise ValueError('Reflector label must be 1–60 printable characters')
         if not isinstance(r['host'],str) or not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9.-]{0,79}',r['host']):
@@ -89,5 +91,5 @@ def render(c, directory='/etc/hamspot'):
     out = {}
     for name,p in [('MMDVM-Host.ini',host),('DMRGateway.ini',gateway)]:
         buf=io.StringIO();p.write(buf,space_around_delimiters=False);out[name]=buf.getvalue()
-    out['XLXHosts.txt']=''.join(f"{r['id']};{r['host']};{4000+ord(c['module'])-64}\n" for r in c['reflectors'])
+    out['XLXHosts.txt']=''.join(f"{r['id']};{r['host']};{4000+ord(r.get('module',c['module']))-64}\n" for r in c['reflectors'])
     return out

@@ -32,7 +32,7 @@ def import_dmr(c,text):
         if not line.strip() or line.lstrip().startswith('#'): continue
         ident,host,module=line.strip().split(';')
         r=existing.get(ident,{'id':ident,'label':'XLX'+ident,'port':62030,'password':'passw0rd'})
-        r['host']=host;entries.append(r)
+        r['host']=host;r['module']=chr(int(module)-4000+64);entries.append(r)
         if ident==c['selected_reflector']: c['module']=chr(int(module)-4000+64)
     c['reflectors']=entries
     if c['selected_reflector'] not in {r['id'] for r in entries}:

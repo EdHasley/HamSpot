@@ -45,7 +45,7 @@ class RadioTests(unittest.TestCase):
             with self.assertRaises(ValueError):hosts.validate_hosts(kind,text)
     def test_dmr_import_keeps_custom_port_and_password(self):
         c=hosts.import_dmr(enabled(),'TST;new.example.org;4002\n')
-        self.assertEqual(c['reflectors'][0]['port'],62040);self.assertEqual(c['module'],'B');self.assertEqual(c['reflectors'][0]['host'],'new.example.org')
+        self.assertEqual(c['reflectors'][0]['port'],62040);self.assertEqual(c['module'],'B');self.assertIn('TST;new.example.org;4002',radio.render(c)['XLXHosts.txt']);self.assertEqual(c['reflectors'][0]['host'],'new.example.org')
     def test_apply_rolls_back_on_start_failure(self):
         with tempfile.TemporaryDirectory() as d,patch.object(control,'STATE',Path(d)),patch.object(control,'atomic',lambda p,t:p.write_text(t)):
             old=default()

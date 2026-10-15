@@ -21,7 +21,7 @@ for(const name of ['start','stop'])$(name).onclick=()=>action(()=>api(name,{}));
 $('refresh').onclick=()=>refresh().catch(e=>message(e.message));
 $('backup').onclick=async()=>{try{const data=await api('backup'),url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='hamspot-backup.json';a.click();URL.revokeObjectURL(url)}catch(e){message(e.message)}};
 $('restore').onchange=e=>{const file=e.target.files[0];if(file&&confirm('Restore this configuration and restart configured radio services?'))action(async()=>api('config',JSON.parse(await file.text())))};
-load().then(()=>message('Connected to this HamSpot. Radio remains off until enabled in Radio setup.')).catch(e=>message(e.message));setInterval(()=>{if(!busy)refresh().catch(()=>{})},5000);
+load().then(()=>message('Connected to this HamSpot. Check the live service states and Diagnostics.')).catch(e=>message(e.message));setInterval(()=>{if(!busy)refresh().catch(()=>{})},5000);
 
 let hostFiles={};
 async function loadHosts(){hostFiles=await api('hosts');showHost()}
