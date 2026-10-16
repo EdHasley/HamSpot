@@ -3,7 +3,7 @@ name: Build HamSpot SD Image (DMR Integration Test)
 on:
   workflow_dispatch:
   push:
-    branches: ["image/dmr-integration"]
+    branches: ["image/dmr-integration", "prototype/dashboard-integration"]
 
 permissions:
   contents: read
