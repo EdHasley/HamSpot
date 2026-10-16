@@ -7,6 +7,7 @@ import sys
 import tempfile
 from pathlib import Path
 from radio import validate, render
+from auth import matches, password_record
 from hosts import HOST_FILES, validate_hosts, import_dmr
 
 STATE = Path('/etc/hamspot')
@@ -45,6 +46,14 @@ def apply(c):
         if active: run('start',*active,check=False)
         raise
 
+def change_password(current, new):
+    auth = json.loads((STATE/'auth.json').read_text())
+    if not isinstance(current, str) or not matches(current, auth):
+        raise ValueError('Current password is incorrect')
+    record = password_record(new)
+    atomic(STATE/'auth.json', json.dumps(record)+'\n')
+
+
 if __name__=='__main__':
     import fcntl
     STATE.mkdir(exist_ok=True)
@@ -61,6 +70,7 @@ if __name__=='__main__':
                 else:
                     directory=STATE/'hosts';directory.mkdir(exist_ok=True)
                     atomic(directory/HOST_FILES[kind],text)
+            elif request['action']=='password': change_password(request['current_password'], request['new_password'])
             elif request['action']=='stop': run('stop',*UNITS)
             elif request['action']=='start': apply(json.loads((STATE/'config.json').read_text()))
             else: raise ValueError('Unknown action')

@@ -5,11 +5,14 @@ import hmac
 import json
 import os
 import ssl
+import re
+import shutil
 import subprocess
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
 from radio import validate
+from auth import validate_password
 from hosts import HOST_FILES, validate_hosts
 
 ROOT=Path(__file__).resolve().parent
@@ -21,11 +24,36 @@ def command(args):
         return p.stdout.strip() or p.stderr.strip()
     except (OSError,subprocess.TimeoutExpired): return 'unavailable'
 
+def system_metrics():
+    metrics = {'cpu_temperature': None, 'memory_percent': None, 'disk_percent': None}
+    try:
+        metrics['cpu_temperature'] = round(float(Path('/sys/class/thermal/thermal_zone0/temp').read_text()) / 1000, 1)
+    except (OSError, ValueError): pass
+    try:
+        mem = dict(re.findall(r'^(MemTotal|MemAvailable):\s+(\d+)', Path('/proc/meminfo').read_text(), re.M))
+        metrics['memory_percent'] = round(100 * (1 - int(mem['MemAvailable']) / int(mem['MemTotal'])))
+    except (OSError, ValueError, KeyError, ZeroDivisionError): pass
+    try:
+        disk = shutil.disk_usage(STATE)
+        metrics['disk_percent'] = round(100 * disk.used / disk.total)
+    except (OSError, ZeroDivisionError): pass
+    return metrics
+
+def recent_events(logs):
+    events = []
+    for line in logs.splitlines():
+        if re.search(r'voice|BER|header|link|logged|login|NAK|error|fail', line, re.I):
+            events.append({'source': 'Radio / gateway', 'text': line[:2000]})
+    return events[-30:]
+
 def status():
     c=json.loads((STATE/'config.json').read_text())
     units={u:command(['/usr/bin/systemctl','is-active',f'hamspot-{u}.service']) for u in ('radio','gateway')}
     logs=command(['/usr/bin/journalctl','-u','hamspot-radio','-u','hamspot-gateway','-n','80','--no-pager','-o','cat'])
-    return {'demo':False,'callsign':c['callsign'],'mode':'DMR','reflector':c['selected_reflector'],'module':c['module'],'talkgroup':c['talkgroup'],'services':units,'serial_exists':Path(c['uart']).exists(),'logs':logs,'network_status':'Check gateway log for login acknowledgement; running alone does not prove connection','bridge':'not installed','nextion':'not installed'}
+    network = 'Disabled in saved configuration'
+    if c['network_enabled']:
+        network = 'Gateway service '+units['gateway']+'; verify login acknowledgement in Diagnostics'
+    return {'demo':False,'callsign':c['callsign'],'mode':'DMR','reflector':c['selected_reflector'],'module':c['module'],'talkgroup':c['talkgroup'],'slot':c['slot'],'color_code':c['color_code'],'rx_frequency':c['rx_frequency'],'tx_frequency':c['tx_frequency'],'services':units,'serial_exists':Path(c['uart']).exists(),'logs':logs,'events':recent_events(logs),'system':system_metrics(),'network_status':network,'bridge':'not installed','cross_mode':{'available':False,'reason':'Unavailable: D-Star gateway and voice transcoder are not integrated in this build'},'nextion':'not installed'}
 
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self,*args,**kwargs): super().__init__(*args,directory=str(ROOT),**kwargs)
@@ -68,7 +96,11 @@ class Handler(SimpleHTTPRequestHandler):
             n=int(self.headers.get('Content-Length','0'))
             if not 0<n<=65536: raise ValueError('Invalid request size')
             data=json.loads(self.rfile.read(n))
-            if self.path=='/api/config': request={'action':'apply','config':validate(data)}
+            if self.path=='/api/password':
+                current=validate_password(data['current_password'])
+                new=validate_password(data['new_password'])
+                request={'action':'password','current_password':current,'new_password':new}
+            elif self.path=='/api/config': request={'action':'apply','config':validate(data)}
             elif self.path=='/api/hosts':
                 request={'action':'hosts','kind':data['kind'],'text':validate_hosts(data['kind'],data['text'])}
             elif self.path in ('/api/start','/api/stop'): request={'action':self.path.split('/')[-1]}

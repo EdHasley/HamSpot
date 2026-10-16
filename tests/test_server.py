@@ -83,6 +83,32 @@ class ApiTests(unittest.TestCase):
     def test_config_and_dashboard(self):
         with self.request('/api/config') as r:self.assertEqual(json.load(r),default())
         with self.request('/') as r:self.assertIn(b'XLX Quick Connect',r.read())
+    def test_live_status_and_unavailable_cross_mode(self):
+        with patch.object(server, 'command', return_value='DMR voice header\nGateway login failed'):
+            with self.request('/api/status') as response: result=json.load(response)
+        self.assertFalse(result['demo'])
+        self.assertEqual(result['network_status'], 'Disabled in saved configuration')
+        self.assertFalse(result['cross_mode']['available'])
+        self.assertEqual(len(result['events']), 2)
+        self.assertIn('memory_percent', result['system'])
+        self.assertEqual(result['rx_frequency'], 0)
+
+    def test_change_to_simple_password_and_reject_old_login(self):
+        original=(self.state/'auth.json').read_text()
+        try:
+            with patch.object(control,'STATE',self.state), patch.object(control,'atomic',lambda p,t:p.write_text(t)):
+                with self.assertRaises(ValueError): control.change_password('wrong','easy')
+                self.assertEqual((self.state/'auth.json').read_text(),original)
+                with self.assertRaises(ValueError): control.change_password('test-password','')
+                control.change_password('test-password','easy')
+            self.assertNotIn('easy',(self.state/'auth.json').read_text())
+            with self.assertRaises(urllib.error.HTTPError) as cm:self.request('/api/config')
+            self.assertEqual(cm.exception.code,401)
+            headers={'Authorization':'Basic '+base64.b64encode(b'admin:easy').decode()}
+            with urllib.request.urlopen(urllib.request.Request(self.url+'/api/config',headers=headers)) as r:
+                self.assertEqual(json.load(r),default())
+        finally:(self.state/'auth.json').write_text(original)
+
     def test_cross_site_rejected(self):
         with self.assertRaises(urllib.error.HTTPError) as cm:self.request('/api/config',default(),'https://evil.example')
         self.assertEqual(cm.exception.code,403)

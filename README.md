@@ -29,3 +29,11 @@ D-Star/other mode gateways, cross-mode audio, physical Nextion HMI/TFT and seria
 `python3 -m unittest discover -s tests -v` tests validation, rendering, authentication, host editing and failed-operation rollback. Run `bash image/build-image.sh` on a Linux host with Docker to build locally, or use the repository Actions workflow. Build success does not certify Pi boot, RF transmit, network audio or displays. See `docs/BUILD_STATUS.md` for exact scope.
 
 Radio source revisions are recorded in `radio/sources.json`. Upstream source and license files remain under `/usr/local/src/hamspot` in the image. HamSpot does not claim authorship of those programs.
+
+## Dashboard integration prototype
+
+Branch `prototype/dashboard-integration` adds a full-width layout, charcoal/slate dark theme, radio/network sidebar, live CPU temperature/memory/disk metrics and journal event table. Dashboard start/stop and XLX controls use the existing privileged service helper; settings are saved to the same configuration used by MMDVM-Host and DMRGateway. Cross mode reports unavailable until D-Star gateway and codec integration exists.
+
+This branch triggers the SD image workflow automatically. Download only a successful image artifact from that branch's latest build. Test on a spare card: save callsign/DMR ID/frequencies/modem settings, enable radio, check modem initialization in Diagnostics, save an XLX host/port, connect to a module and check gateway login. Then test RF receive and transmit audio in both directions. Neither successful unit tests nor an image build proves hardware operation.
+
+Browser passwords can be changed under **Backup & Maintenance → Change browser password**. Enter the current password and the new password twice. Simple nonempty passwords are accepted without complexity rules (1–128 characters). Reload afterward and sign in as `admin` with the new password. This changes the web login only; configuration backups do not include or restore it. The first-boot login file continues to show the original generated password after a change.
